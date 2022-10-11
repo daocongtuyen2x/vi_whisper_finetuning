@@ -1,3 +1,4 @@
+import os
 import argparse
 from pathlib import Path
 import torch
@@ -43,8 +44,8 @@ if __name__=="__main__":
             checkpoint_path: %s,
             model_name: %s,
             lang: %s,
-            learning_rate: %f,
-            num_train_epochs: %d,
+            learning_rate: %.5f,
+            num_finetune_epochs: %d,
             batch_size: %d""" % ("No check point" if config.checkpoint_path == "" else config.checkpoint_path, config.model_name, config.lang, config.learning_rate, config.num_train_epochs, config.batch_size))
 
     # Load dataset for finetuning
@@ -67,8 +68,9 @@ if __name__=="__main__":
     )
 
 
-    Path(config.log_output_dir).mkdir(exist_ok=True)
-    Path(config.check_output_dir).mkdir(exist_ok=True)
+
+    Path(os.path.join(os.getcwd(), config.log_output_dir)).mkdir(exist_ok=True)
+    Path(os.path.join(os.getcwd(), config.check_output_dir)).mkdir(exist_ok=True)
 
     # Log and checkpoint
     tflogger = TensorBoardLogger(
@@ -95,4 +97,4 @@ if __name__=="__main__":
         callbacks=callback_list,
     )
 
-    # trainer.fit(model)
+    trainer.fit(model)

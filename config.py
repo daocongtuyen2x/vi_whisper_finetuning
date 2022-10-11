@@ -8,8 +8,8 @@ class Config:
     num_train_epochs = 10
     gradient_accumulation_steps = 1
     sample_rate = 16000
-    log_output_dir = "content/logs"
-    check_output_dir = "content/artifacts"
+    log_output_dir = "logs"
+    check_output_dir = "artifacts"
     train_name = "whisper"
     train_id = "fluers"
     model_name = "base"

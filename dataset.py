@@ -128,9 +128,11 @@ class VNFluers(torch.utils.data.Dataset):
 
 def load_fluers():
     print('Loading Vietnamese Fluers dataset...')
-    os.system("wget https://storage.googleapis.com/xtreme_translations/FLEURS102/vi_vn.tar.gz")
-    os.makedirs('fluers', exist_ok=True)
-    os.system("tar -xvf 'vi_vn.tar.gz' -C fluers")
+
+    if not os.path.exists('vi_vn.tar.gz'):
+        os.system("wget https://storage.googleapis.com/xtreme_translations/FLEURS102/vi_vn.tar.gz")
+        os.makedirs('fluers', exist_ok=True)
+        os.system("tar -xf 'vi_vn.tar.gz' -C fluers")
 
 
     train_list_files = get_list_files('train')
