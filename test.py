@@ -1,10 +1,19 @@
+import jiwer
 import whisper
 import torch
 import argparse
+from tqdm import tqdm
+import pandas as pd
 
 from config import Config
 from dataset import load_fluers, WhisperDataCollatorWithPadding
 from model import WhisperModelModule
+
+try:
+    import tensorflow  # required in Colab to avoid protobuf compatibility issues
+except ImportError:
+    pass
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -41,11 +50,21 @@ if __name__=="__main__":
     language="vi", without_timestamps=True, fp16=torch.cuda.is_available()
     )
 
-    model.eval()
-    with torch.no_grad():
-        for batch in test_loader:
-            input_ids = batch["input_ids"].to(device)
-            print('label:', batch["labels"])
-            result = whisper.decode(model, input_ids, options)
-            print('predict:', result.text, '\n')
+    hypotheses = []
+    references = []
+    print(model.device)
+    for sample in tqdm(test_loader):
+        mels = sample["input_ids"].to(model.device)
+        texts = sample["texts"]
+        results = model.decode(mels, options)
+        hypotheses.extend([result.text for result in results])
+        references.extend(texts)
 
+    data = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
+
+    print(data["hypothesis_clean"][:10])
+    print("___________")
+    print(data["reference_clean"][:10])
+    wer = jiwer.wer(list(data["reference_clean"]), list(data["hypothesis_clean"]))
+
+    print(f"WER: {wer * 100:.2f} %")
