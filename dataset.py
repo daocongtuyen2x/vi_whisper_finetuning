@@ -10,17 +10,23 @@ import torchaudio.transforms as at
 from utils import load_wave
 from pathlib import Path
  
-class WhisperDataCollatorWhithPadding:
-    def __call__(sefl, features):
+class WhisperDataCollatorWithPadding:
+    """
+    Using for collating many input tensors with different sizes to batch and maybe applying some processes to data.
+    Input: list or dictionary of input tensors
+    Output: list dictionary of batched tensors
+    """
+    def __call__(self, features):
         input_ids, labels, dec_input_ids, texts = [], [], [], []
         for f in features:
             input_ids.append(f["input_ids"])
             labels.append(f["labels"])
             dec_input_ids.append(f["dec_input_ids"])
             texts.append(f["text"])
-        input_ids = torch.concat([input_id[None, :] for input_id in input_ids])
+        
+        input_ids = torch.concat([input_id[None, :] for input_id in input_ids])  # [batch_size, seq_len]
 
-        label_lengths = [len(lab) for lab in labels]
+        label_lengths = [len(lab) for lab in labels]  # same size with input_ids
         dec_input_ids_length = [len(e) for e in dec_input_ids]
         max_label_len = max(label_lengths + dec_input_ids_length)
 
