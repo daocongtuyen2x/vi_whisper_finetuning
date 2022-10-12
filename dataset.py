@@ -48,33 +48,7 @@ class WhisperDataCollatorWithPadding:
         batch["texts"] = texts
         return batch
 
-
-#------------------------------------FLUERS------------------------------------#
-
-def get_list_files(phase,audio_path = 'fluers/vi_vn/audio', text_max_length=1000, audio_max_sample_length=960000, sample_rate=16000):
-    audio_path = os.path.join(audio_path, phase)
-    audio_transcript_pair_list = []
-    if phase=='train':
-        tsv_file = 'fluers/vi_vn/train.tsv'
-    elif phase=='dev':
-        tsv_file = 'fluers/vi_vn/dev.tsv'
-    else:
-        tsv_file = 'fluers/vi_vn/test.tsv'
-    df = pd.read_table(tsv_file, names=("id", "file_name", "raw_transcription", "transcription", "_", "num_samples", "gender"))
-    for index, row in df.iterrows():
-        new_path = Path(os.path.join(audio_path, row['file_name']))
-        audio_id = row['id']
-        text = row['transcription']
-        if new_path.exists():
-            audio = load_wave(new_path, sample_rate=sample_rate)[0]
-            if len(text) > text_max_length or len(audio) > audio_max_sample_length:
-                print('skip file:', new_path,'with len text:', len(text), 'and len audio', len(audio))
-                continue
-            audio_transcript_pair_list.append((audio_id, str(new_path), text))
-    return audio_transcript_pair_list
-
-
-class VNFluers(torch.utils.data.Dataset):
+class WhisperDataset(torch.utils.data.Dataset):
     def __init__(self, dataset, sample_rate=16000) -> None:
         super().__init__()
 
@@ -126,28 +100,95 @@ class VNFluers(torch.utils.data.Dataset):
         }
 
 
-def load_fluers():
-    print('Loading Vietnamese Fluers dataset...')
+def load_dataset(dataset_name):
+    train_dataset = None
+    test_dataset = None
 
-    if not os.path.exists('vi_vn.tar.gz'):
-        os.system("wget https://storage.googleapis.com/xtreme_translations/FLEURS102/vi_vn.tar.gz")
-        os.makedirs('fluers', exist_ok=True)
-        os.system("tar -xf 'vi_vn.tar.gz' -C fluers")
+    if dataset_name == 'fluers':
+        print('Loading Vietnamese Fluers dataset...')
+        if not os.path.exists('vi_vn.tar.gz'):
+            os.system("wget https://storage.googleapis.com/xtreme_translations/FLEURS102/vi_vn.tar.gz")
+            os.makedirs('fluers', exist_ok=True)
+            os.system("tar -xf 'vi_vn.tar.gz' -C fluers")
+
+        train_list_files = get_list_files_fluers('train')
+        val_list_files = get_list_files_fluers('dev')
+        test_list_files = get_list_files_fluers('test')
+        train_list_files +=val_list_files
+
+        print('Num train samples:', len(train_list_files))
+        print('Num test samples:', len(test_list_files))
+
+        train_dataset = WhisperDataset(train_list_files)
+        test_dataset = WhisperDataset(test_list_files)
+    
+    elif dataset_name == 'vin100h':
+        # Download vin100h dataset
+        print('Loading Vietnamese Vin100h dataset...')
 
 
-    train_list_files = get_list_files('train')
-    val_list_files = get_list_files('dev')
-    test_list_files = get_list_files('test')
-    train_list_files +=val_list_files
-    print('Num train samples:', len(train_list_files))
-    print('Num test samples:', len(test_list_files))
 
-    train_dataset = VNFluers(train_list_files)
-    test_dataset = VNFluers(test_list_files)
+        train_list_files = get_list_files_vin100h('train')
+        test_list_files = get_list_files_vin100h('test')
+
+        print('Num train samples:', len(train_list_files))
+        print('Num test samples:', len(test_list_files))
+
+        train_dataset = WhisperDataset(train_list_files)
+        test_dataset = WhisperDataset(test_list_files)
+
+    else:
+        print(dataset_name, 'is not supported, please try again!')
+
     return train_dataset, test_dataset
+
+#------------------------------------FLUERS------------------------------------#
+
+def get_list_files_fluers(phase, audio_path = 'fluers/vi_vn/audio', text_max_length=1000, audio_max_sample_length=960000, sample_rate=16000):
+    audio_path = os.path.join(audio_path, phase)
+    audio_transcript_pair_list = []
+    if phase=='train':
+        tsv_file = 'fluers/vi_vn/train.tsv'
+    elif phase=='dev':
+        tsv_file = 'fluers/vi_vn/dev.tsv'
+    else:
+        tsv_file = 'fluers/vi_vn/test.tsv'
+    df = pd.read_table(tsv_file, names=("id", "file_name", "raw_transcription", "transcription", "_", "num_samples", "gender"))
+    for index, row in df.iterrows():
+        new_path = Path(os.path.join(audio_path, row['file_name']))
+        audio_id = row['id']
+        text = row['transcription']
+        if new_path.exists():
+            audio = load_wave(new_path, sample_rate=sample_rate)[0]
+            if len(text) > text_max_length or len(audio) > audio_max_sample_length:
+                print('skip file:', new_path,'with len text:', len(text), 'and len audio', len(audio))
+                continue
+            audio_transcript_pair_list.append((audio_id, str(new_path), text))
+    return audio_transcript_pair_list
+
+
+
+#------------------------------------VIN 100h VLSP2020 ASR Dataset------------------------------------#
+def get_list_files_vin100h(phase, dataset_path = 'vlsp2020_train_set_02', text_max_length=1000, audio_max_sample_length=960000, sample_rate=16000):
+    audio_transcript_pair_list = []
+    if phase=='train':
+      csv_file = 'vlsp2020_train.csv'
+    else:
+      csv_file = 'vlsp2020_test.csv'
+    df = pd.read_csv(csv_file)
+    for index, row in df.iterrows():
+        new_path = Path(os.path.join(dataset_path, row['filename']+'.wav'))
+        audio_id = index
+        with open(Path(os.path.join(dataset_path, row['filename']+'.txt')), 'r') as f:
+          text = f.readlines()[0]
+        if new_path.exists():
+            audio = load_wave(new_path, sample_rate=sample_rate)[0]
+            if len(text) > text_max_length or len(audio) > audio_max_sample_length:
+                print('skip file:', new_path,'with len text:', len(text), 'and len audio', len(audio))
+                continue
+            audio_transcript_pair_list.append((audio_id, str(new_path), text))
+    return audio_transcript_pair_list
+
 if __name__=='__main__':
-    load_fluers()
-
-
-
-
+    # load_fluers()
+    print('main')

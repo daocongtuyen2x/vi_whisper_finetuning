@@ -12,7 +12,7 @@ from tqdm import tqdm
 import pandas as pd
 
 from config import Config
-from dataset import load_fluers, WhisperDataCollatorWithPadding
+from dataset import load_dataset, WhisperDataCollatorWithPadding
 from model import WhisperModelModule
 
 
@@ -22,6 +22,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--checkpoint_path', type=str, default='', help='path of checkpoint, if not set, use origin pretrained model')
+    parser.add_argument('--dataset_name', type=str, default='fluers', help='the dataset for finetuning, includes fluers, vin100h, vlsp2019')
 
     args = parser.parse_args()
     config = Config()
@@ -39,7 +40,7 @@ if __name__=="__main__":
     model = module.model
     model.to(device)
 
-    _, valid_dataset = load_fluers()
+    _, valid_dataset = load_dataset(args.dataset_name)
     test_loader = torch.utils.data.DataLoader(
         valid_dataset,
         batch_size=config.batch_size,
@@ -49,7 +50,7 @@ if __name__=="__main__":
 
     # decode the audio
     options = whisper.DecodingOptions(
-    language="vi", without_timestamps=True, fp16=torch.cuda.is_available()
+        language="vi", without_timestamps=True, fp16=torch.cuda.is_available()
     )
 
     hypotheses = []
@@ -70,9 +71,10 @@ if __name__=="__main__":
     data["reference_clean"] = [
         text.lower() for text in data["reference"]
     ]
-    print(data["hypothesis_clean"][:10])
-    print("___________")
-    print(data["reference_clean"][:10])
+    for i in range(20):
+        print('Reference:', data["reference_clean"][i])
+        print('Predict:', data["hypothesis_clean"][i])
+        print('\n')
     wer = jiwer.wer(list(data["reference_clean"]), list(data["hypothesis_clean"]))
 
     print(f"WER: {wer * 100:.2f} %")

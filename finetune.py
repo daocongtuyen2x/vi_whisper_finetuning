@@ -9,7 +9,7 @@ try:
 except ImportError:
     pass
 
-from dataset import load_fluers, WhisperDataCollatorWithPadding
+from dataset import load_dataset, WhisperDataCollatorWithPadding
 
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
@@ -23,7 +23,7 @@ if __name__=="__main__":
 
     parser.add_argument('--checkpoint_path', type=str, default='', help='path of checkpoint, if not set, use origin pretrained model')
     parser.add_argument('--model_name', type=str, default='base', help='model name, tiny, small, medium, base, large')
-    parser.add_argument('--dataset', type=int, default=0, help='the iteration to start training')
+    parser.add_argument('--dataset', type=str, default='fluers', help='the dataset for finetuning, includes fluers, vin100h, vlsp2019')
     parser.add_argument('--lang', type=str, default='vi', help='language, vi, en')
     parser.add_argument('--lr', type=float, default=0.0005, help='learning rate')
     parser.add_argument('--epoch', type=int, default=10, help='number of epoch for finetuning')
@@ -42,17 +42,18 @@ if __name__=="__main__":
 
     print(f"""Finetuning Whisper with new config:
             checkpoint_path: %s,
+            dataset: %s,
             model_name: %s,
             lang: %s,
             learning_rate: %.5f,
             num_finetune_epochs: %d,
-            batch_size: %d""" % ("No check point" if config.checkpoint_path == "" else config.checkpoint_path, config.model_name, config.lang, config.learning_rate, config.num_train_epochs, config.batch_size))
+            batch_size: %d""" % ("No check point" if config.checkpoint_path == "" else config.checkpoint_path, args.dataset, config.model_name, config.lang, config.learning_rate, config.num_train_epochs, config.batch_size))
 
     # Load dataset for finetuning
     if config.lang == "vi":
-        train_dataset, valid_dataset = load_fluers()
+        train_dataset, valid_dataset = load_dataset('fluers')
     else:
-        raise ValueError("Not support dataset, please try again!")
+        raise ValueError("Not support other language dataset, please choose vi for languague!")
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
