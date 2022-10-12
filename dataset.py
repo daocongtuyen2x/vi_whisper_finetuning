@@ -100,7 +100,7 @@ class WhisperDataset(torch.utils.data.Dataset):
         }
 
 
-def load_dataset(dataset_name):
+def load_dataset(dataset_name, test=False):
     train_dataset = None
     test_dataset = None
 
@@ -110,16 +110,15 @@ def load_dataset(dataset_name):
             os.system("wget https://storage.googleapis.com/xtreme_translations/FLEURS102/vi_vn.tar.gz")
             os.makedirs('fluers', exist_ok=True)
             os.system("tar -xf 'vi_vn.tar.gz' -C fluers")
+        if not test:
+            train_list_files = get_list_files_fluers('train')
+            val_list_files = get_list_files_fluers('dev')
+            train_list_files +=val_list_files
+            print('Num train samples:', len(train_list_files))
+            train_dataset = WhisperDataset(train_list_files)
 
-        train_list_files = get_list_files_fluers('train')
-        val_list_files = get_list_files_fluers('dev')
         test_list_files = get_list_files_fluers('test')
-        train_list_files +=val_list_files
-
-        print('Num train samples:', len(train_list_files))
         print('Num test samples:', len(test_list_files))
-
-        train_dataset = WhisperDataset(train_list_files)
         test_dataset = WhisperDataset(test_list_files)
     
     elif dataset_name == 'vin100h':
@@ -127,14 +126,13 @@ def load_dataset(dataset_name):
         print('Loading Vietnamese Vin100h dataset...')
 
 
+        if not test:
+            train_list_files = get_list_files_vin100h('train')
+            print('Num train samples:', len(train_list_files))
+            train_dataset = WhisperDataset(train_list_files)
 
-        train_list_files = get_list_files_vin100h('train')
         test_list_files = get_list_files_vin100h('test')
-
-        print('Num train samples:', len(train_list_files))
         print('Num test samples:', len(test_list_files))
-
-        train_dataset = WhisperDataset(train_list_files)
         test_dataset = WhisperDataset(test_list_files)
 
     else:

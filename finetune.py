@@ -51,7 +51,7 @@ if __name__=="__main__":
 
     # Load dataset for finetuning
     if config.lang == "vi":
-        train_dataset, valid_dataset = load_dataset('fluers')
+        train_dataset, valid_dataset = load_dataset(args.dataset)
     else:
         raise ValueError("Not support other language dataset, please choose vi for languague!")
 
@@ -67,7 +67,6 @@ if __name__=="__main__":
         num_workers=config.num_worker,
         collate_fn=WhisperDataCollatorWithPadding(),
     )
-
 
 
     Path(os.path.join(os.getcwd(), config.log_output_dir)).mkdir(exist_ok=True)
