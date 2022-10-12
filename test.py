@@ -1,3 +1,9 @@
+try:
+    import tensorflow  # required in Colab to avoid protobuf compatibility issues
+except ImportError:
+    pass
+
+
 import jiwer
 import whisper
 import torch
@@ -9,10 +15,6 @@ from config import Config
 from dataset import load_fluers, WhisperDataCollatorWithPadding
 from model import WhisperModelModule
 
-try:
-    import tensorflow  # required in Colab to avoid protobuf compatibility issues
-except ImportError:
-    pass
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -61,7 +63,13 @@ if __name__=="__main__":
         references.extend(texts)
 
     data = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
-
+    
+    data["hypothesis_clean"] = [
+        text.lower() for text in data["hypothesis"]
+    ]
+    data["reference_clean"] = [
+        text.lower() for text in data["reference"]
+    ]
     print(data["hypothesis_clean"][:10])
     print("___________")
     print(data["reference_clean"][:10])
