@@ -121,17 +121,16 @@ def load_dataset(dataset_name, test=False):
         print('Num test samples:', len(test_list_files))
         test_dataset = WhisperDataset(test_list_files)
     
-    elif dataset_name == 'vin100h':
-        # Download vin100h dataset
-        print('Loading Vietnamese Vin100h dataset...')
-
+    elif dataset_name == 'vlsp2019':
+        # Download VLSP2019 dataset
+        print('Loading VLSP2019 dataset...')
 
         if not test:
-            train_list_files = get_list_files_vin100h('train')
+            train_list_files = get_list_files_vlsp2019('train')
             print('Num train samples:', len(train_list_files))
             train_dataset = WhisperDataset(train_list_files)
 
-        test_list_files = get_list_files_vin100h('test')
+        test_list_files = get_list_files_vlsp2019('test')
         print('Num test samples:', len(test_list_files))
         test_dataset = WhisperDataset(test_list_files)
 
@@ -167,7 +166,7 @@ def get_list_files_fluers(phase, audio_path = 'fluers/vi_vn/audio', text_max_len
 
 
 #------------------------------------VLSP2019 ASR Dataset------------------------------------#
-def get_list_files_vin100h(phase, dataset_path = 'vlsp2019/data', text_max_length=1000, audio_max_sample_length=960000, sample_rate=16000):
+def get_list_files_vlsp2019(phase, dataset_path = 'vlsp2019/data', text_max_length=1000, audio_max_sample_length=960000, sample_rate=16000):
     audio_transcript_pair_list = []
     if phase=='train':
       csv_file = 'vlsp2019/vlsp2019_train.csv'
