@@ -9,6 +9,7 @@ import argparse
 
 from config import Config
 from model import WhisperModelModule
+from utils import load_wave
 
 
 
@@ -35,8 +36,9 @@ if __name__=="__main__":
     model = module.model
     model.to(device)
 
-    audio = whisper.load_audio(args.wav_path)
+    audio = whisper.load_audio(args.audio_path)
     audio = whisper.pad_or_trim(audio)
+
     # make log-Mel spectrogram and move to the same device as the model
     mel = whisper.log_mel_spectrogram(audio).to(model.device)
 
@@ -45,7 +47,7 @@ if __name__=="__main__":
         language="vi", without_timestamps=True, fp16=torch.cuda.is_available()
     )
 
-    result = whisper.decode(model, mel, options)
-    print('Predicted text:', result.text)
+    result = model.decode(mel, options)
+    print('Predicted:', result.text)
 
     

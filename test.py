@@ -40,7 +40,7 @@ if __name__=="__main__":
     model = module.model
     model.to(device)
 
-    _, valid_dataset = load_dataset(args.dataset_name)
+    _, valid_dataset = load_dataset(args.dataset_name, test=True)
     test_loader = torch.utils.data.DataLoader(
         valid_dataset,
         batch_size=config.batch_size,
