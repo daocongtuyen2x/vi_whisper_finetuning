@@ -166,13 +166,13 @@ def get_list_files_fluers(phase, audio_path = 'fluers/vi_vn/audio', text_max_len
 
 
 
-#------------------------------------VIN 100h VLSP2020 ASR Dataset------------------------------------#
-def get_list_files_vin100h(phase, dataset_path = 'vlsp2020_train_set_02', text_max_length=1000, audio_max_sample_length=960000, sample_rate=16000):
+#------------------------------------VLSP2019 ASR Dataset------------------------------------#
+def get_list_files_vin100h(phase, dataset_path = 'vlsp2019/data', text_max_length=1000, audio_max_sample_length=960000, sample_rate=16000):
     audio_transcript_pair_list = []
     if phase=='train':
-      csv_file = 'vlsp2020_train.csv'
+      csv_file = 'vlsp2019/vlsp2019_train.csv'
     else:
-      csv_file = 'vlsp2020_test.csv'
+      csv_file = 'vlsp2019/vlsp2019_test.csv'
     df = pd.read_csv(csv_file)
     for index, row in df.iterrows():
         new_path = Path(os.path.join(dataset_path, row['filename']+'.wav'))

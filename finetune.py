@@ -80,7 +80,7 @@ if __name__=="__main__":
     checkpoint_callback = ModelCheckpoint(
         dirpath=f"{config.check_output_dir}/checkpoint",
         filename="checkpoint-{epoch:04d}",
-        save_top_k=-1,  # all model save
+        save_top_k=1,  # -1: all model save, 1: best model save
     )
 
     # callback list
