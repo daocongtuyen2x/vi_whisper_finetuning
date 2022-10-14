@@ -134,6 +134,22 @@ def load_dataset(dataset_name, test=False):
         print('Num test samples:', len(test_list_files))
         test_dataset = WhisperDataset(test_list_files)
 
+    elif dataset_name == 'vin100h':
+        # Download VIN100h dataset
+        print('Loading VIN100h dataset...')
+        os.system("gdown 1vUSxdORDxk-ePUt-bUVDahpoXiqKchMx")
+        os.system("!tar -xf 'VinBigdata-VLSP2020-100h (1).rar'")
+        os.system("gdown 1Zmj9BqNysiON6Lzjqos9kY08DRanJxXv")
+        os.system("unzip 'vin100h_listfiles.zip'")
+        if not test:
+            train_list_files = get_list_files_vin100h('train')
+            print('Num train samples:', len(train_list_files))
+            train_dataset = WhisperDataset(train_list_files)
+
+        test_list_files = get_list_files_vin100h('test')
+        print('Num test samples:', len(test_list_files))
+        test_dataset = WhisperDataset(test_list_files)
+
     else:
         print(dataset_name, 'is not supported, please try again!')
 
@@ -186,6 +202,27 @@ def get_list_files_vlsp2019(phase, dataset_path = 'vlsp2019/data', text_max_leng
             audio_transcript_pair_list.append((audio_id, str(new_path), text))
     return audio_transcript_pair_list
 
+#------------------------------------VIN100h ASR Dataset------------------------------------#
+def get_list_files_vin100h(phase, dataset_path = 'vlsp2020_train_set_02', text_max_length=1000, audio_max_sample_length=960000, sample_rate=16000):
+    audio_transcript_pair_list = []
+    if phase=='train':
+      csv_file = 'vin100h_train.csv'
+    else:
+      csv_file = 'vin100h_test.csv'
+    df = pd.read_csv(csv_file)
+    for index, row in df.iterrows():
+        new_path = Path(os.path.join(dataset_path, row['filename']+'.wav'))
+        audio_id = index
+        with open(Path(os.path.join(dataset_path, row['filename']+'.txt')), 'r') as f:
+          text = f.readlines()[0]
+        if new_path.exists():
+            audio = load_wave(new_path, sample_rate=sample_rate)[0]
+            if len(text) > text_max_length or len(audio) > audio_max_sample_length:
+                print('skip file:', new_path,'with len text:', len(text), 'and len audio', len(audio))
+                continue
+            audio_transcript_pair_list.append((audio_id, str(new_path), text))
+    return audio_transcript_pair_list
+
 if __name__=='__main__':
     # load_fluers()
-    print('main')
+    print('Load dataset...')
