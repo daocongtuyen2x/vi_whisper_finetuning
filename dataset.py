@@ -136,11 +136,16 @@ def load_dataset(dataset_name, test=False):
 
     elif dataset_name == 'vin100h':
         # Download VIN100h dataset
-        print('Loading VIN100h dataset...')
-        os.system("gdown 1vUSxdORDxk-ePUt-bUVDahpoXiqKchMx")
-        os.system("!tar -xf 'VinBigdata-VLSP2020-100h (1).rar'")
-        os.system("gdown 1Zmj9BqNysiON6Lzjqos9kY08DRanJxXv")
-        os.system("unzip 'vin100h_listfiles.zip'")
+        if not os.path.exists('downloaded_check.txt'):
+            print('Loading VIN100h dataset...')
+            os.system("gdown 1vUSxdORDxk-ePUt-bUVDahpoXiqKchMx")
+            os.system("!tar -xf 'VinBigdata-VLSP2020-100h (1).rar'")
+            os.system("gdown 1Zmj9BqNysiON6Lzjqos9kY08DRanJxXv")
+            os.system("unzip 'vin100h_listfiles.zip'")
+        else:
+            with open('downloaded_check.txt', 'w') as f:
+                f.write('True')
+            print('Dataset files already downloaded!')
         if not test:
             train_list_files = get_list_files_vin100h('train')
             print('Num train samples:', len(train_list_files))
@@ -206,9 +211,9 @@ def get_list_files_vlsp2019(phase, dataset_path = 'vlsp2019/data', text_max_leng
 def get_list_files_vin100h(phase, dataset_path = 'vlsp2020_train_set_02', text_max_length=1000, audio_max_sample_length=960000, sample_rate=16000):
     audio_transcript_pair_list = []
     if phase=='train':
-      csv_file = 'vin100h_train.csv'
+      csv_file = 'train_vin100h.csv'
     else:
-      csv_file = 'vin100h_test.csv'
+      csv_file = 'test_vin100h.csv'
     df = pd.read_csv(csv_file)
     for index, row in df.iterrows():
         new_path = Path(os.path.join(dataset_path, row['filename']+'.wav'))
