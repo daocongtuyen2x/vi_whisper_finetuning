@@ -142,6 +142,7 @@ def load_dataset(dataset_name, test=False):
             os.system("!tar -xf 'VinBigdata-VLSP2020-100h (1).rar'")
             os.system("gdown 1Zmj9BqNysiON6Lzjqos9kY08DRanJxXv")
             os.system("unzip 'vin100h_listfiles.zip'")
+            os.system("remove 'VinBigdata-VLSP2020-100h (1).rar'")
         else:
             with open('downloaded_check.txt', 'w') as f:
                 f.write('True')
