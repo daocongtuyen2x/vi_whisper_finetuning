@@ -139,7 +139,7 @@ def load_dataset(dataset_name, test=False):
         if not os.path.exists('downloaded_check.txt'):
             print('Loading VIN100h dataset...')
             os.system("gdown 1vUSxdORDxk-ePUt-bUVDahpoXiqKchMx")
-            os.system("!tar -xf 'VinBigdata-VLSP2020-100h (1).rar'")
+            os.system("tar -xf 'VinBigdata-VLSP2020-100h (1).rar'")
             os.system("gdown 1Zmj9BqNysiON6Lzjqos9kY08DRanJxXv")
             os.system("unzip 'vin100h_listfiles.zip'")
             os.system("remove 'VinBigdata-VLSP2020-100h (1).rar'")
