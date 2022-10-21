@@ -23,10 +23,12 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--checkpoint_path', type=str, default='', help='path of checkpoint, if not set, use origin pretrained model')
     parser.add_argument('--dataset_name', type=str, default='fluers', help='the dataset for finetuning, includes fluers, vin100h, vlsp2019')
+    parser.add_argument('--model_name', type=str, default='tiny', help='model name')
 
     args = parser.parse_args()
     config = Config()
     config.checkpoint_path = args.checkpoint_path
+    config.model_name = args.model_name
 
     module = WhisperModelModule(config)
     try:
@@ -71,7 +73,9 @@ if __name__=="__main__":
     data["reference_clean"] = [
         text.lower() for text in data["reference"]
     ]
-    for i in range(20):
+
+    data.to_csv('results.csv')
+    for i in range(60):
         print('Reference:', data["reference_clean"][i])
         print('Predict:', data["hypothesis_clean"][i])
         print('\n')
